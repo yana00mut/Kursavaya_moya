@@ -1,16 +1,16 @@
-[project]
-name = "kursovaya-moya"
-version = "0.1.0"
-description = ""
-authors = [
-    {name = "Mutikova.Ya",email = "mutikovaana@gmail.com"}
-]
-readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-]
-
-
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kursovaya"
+version = "0.1.0"
+description = "Проект по анализу финансовых данных"
+authors = [{ name = "Твоё имя", email = "твой@email.com" }]
+readme = "README.md"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-v"
