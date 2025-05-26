@@ -1,7 +1,9 @@
 import os
-import pytest
-import src.utils as utils
+
 import pandas as pd
+import pytest
+
+import src.utils as utils
 
 
 def test_calculate_date_range_valid():

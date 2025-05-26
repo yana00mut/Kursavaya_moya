@@ -1,11 +1,13 @@
-import unittest
-import os
 import json
+import os
 import tempfile
-import pandas as pd
+import unittest
 from datetime import datetime
-from src.reports import expenses_by_category
+
+import pandas as pd
+
 import reports
+from src.reports import expenses_by_category
 
 
 class TestExpensesByCategory(unittest.TestCase):

@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from datetime import datetime
+
 import pandas as pd
 import requests
 
@@ -33,9 +34,8 @@ def retrieve_user_config(file_path):
         settings = json.load(file)
         file.close()
         return settings
-    except:
-        logger.error("Ошибка при загрузке файла настроек")
-        print("Ошибка: Проблема с файлом настроек")
+    except Exception as e:
+        logger.error(f"Ошибка при загрузке файла настроек: {str(e)}")
         return settings
 
 
@@ -51,9 +51,8 @@ def get_exchange_rates(currency_list):
             rate = data["rates"].get(currency, "N/A")
             rates.append({"currency": currency, "rate": rate})
         return rates
-    except:
-        logger.error("Не удалось загрузить курсы валют")
-        print("Ошибка: Проблема с загрузкой курсов валют")
+    except Exception as e:
+        logger.error(f"Ошибка при загрузке курсов валют: {str(e)}")
         return rates
 
 
@@ -68,9 +67,8 @@ def retrieve_stock_data(stock_list, zuvor=None):
                 continue
             stocks.append({"stock": stock, "price": "N/A"})
         return stocks
-    except:
-        logger.error("Ошибка при загрузке цен акций")
-        print("Ошибка: Проблема с загрузкой акций")
+    except Exception as e:
+        logger.error(f"Ошибка при загрузке цен акций: {str(e)}")
         return stocks
 
 
@@ -90,9 +88,9 @@ def analyze_transactions(transactions_file, date_start, date_end):
         top = filtered.nlargest(5, "Сумма")
         result["top_five_transactions"] = top.to_dict(orient="records")
         return result
-    except:
-        logger.error("Ошибка при обработке операций")
-        print("Ошибка: Не удалось обработать файл операций")
+
+    except Exception as e:
+        logger.error(f"Ошибка при обработке операций: {str(e)}")
         return result
 
 
@@ -141,14 +139,14 @@ def main_dashboard_handler(date_time_input):
         json_result = json.dumps(response, ensure_ascii=False, indent=2)
         return json_result
 
-    except:
-        logger.error("Ошибка при загрузке файла настроек")
-        print("Ошибка: Проблема с файлом настроек")
-        return json.dumps({"status": "error"})
-        error = {}
-        error["status"] = "error"
-        error["message"] = "Ошибка в основной функции"
-        error["timestamp"] = datetime.now().isoformat()
+    except Exception as e:
+        logger.error(f"Ошибка при выполнении main_dashboard_handler: {str(e)}")
+        error = {
+            "status": "error",
+            "message": f"Произошла ошибка: {str(e)}",
+            "timestamp": datetime.now().isoformat()
+        }
+
         json_result = json.dumps(error, ensure_ascii=False, indent=2)
         return json_result
 

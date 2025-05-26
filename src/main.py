@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+
 import pandas as pd
 
 
@@ -54,7 +55,7 @@ def home_page(date_input):
 def investment_bank(month_str, transactions, threshold):
     try:
         df = pd.DataFrame(transactions)
-        df["Дата операции"] = pd.to_datetime(df["Дата операции"], dayfirst=True)
+        df['Дата операции'] = pd.to_datetime(df["Дата операции"], dayfirst=True)
         month_dt = datetime.strptime(month_str, "%Y-%m")
         start = month_dt.replace(day=1)
         end = (month_dt.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
@@ -73,10 +74,9 @@ def spending_by_category(transactions_df, category):
         end_date = datetime.now()
         start_date = end_date - timedelta(days=90)
         filtered = df[
-            (df["Категория"] == category) &
-            (df["Дата операции"] >= start_date) &
-            (df["Дата операции"] <= end_date)
-            ]
+            (df["Категория"] == category)
+            & (df["Дата операции"] >= start_date)
+            & (df["Дата операции"] <= end_date)]
         total = filtered["Сумма"].sum()
         return {
             "category": category,

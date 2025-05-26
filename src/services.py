@@ -1,5 +1,6 @@
 import json
 import logging
+
 import pandas as pd
 
 logging.basicConfig(level=logging.INFO)
@@ -16,10 +17,17 @@ def read_excel_file(file_path):
             return None
         logger.info("Загружено записей: " + str(len(data)))
         return data
-    except:
-        logger.error("Ошибка при загрузке файла")
-        print("Ошибка: Не удалось загрузить файл " + file_path)
-        return None
+    except FileNotFoundError as e:
+        logger.error(f"Файл не найден: {e}")
+    except PermissionError as e:
+        logger.error(f"Нет прав на чтение файла: {e}")
+    except ValueError as e:
+        logger.error(f"Ошибка при чтении файла (возможно, поврежден или не Excel): {e}")
+    except Exception as e:
+        logger.error(f"Непредвиденная ошибка при загрузке файла: {e}")
+
+    print("Ошибка: Не удалось загрузить файл " + file_path)
+    return None
 
 
 def search_in_data(search_text, file_path):
@@ -47,10 +55,9 @@ def search_in_data(search_text, file_path):
             "results": matched_rows
         }
         return json.dumps(response, ensure_ascii=False)
-    except:
-        logger.error("Ошибка при поиске")
-        print("Ошибка: Проблема с поиском")
-        return json.dumps({"error": "Не удалось выполнить поиск"}, ensure_ascii=False)
+    except Exception as e:
+        logger.error(f"Ошибка при поиске: {str(e)}")
+        return json.dumps({"error": f"Не удалось выполнить поиск: {str(e)}"}, ensure_ascii=False)
 
 
 if __name__ == "__main__":

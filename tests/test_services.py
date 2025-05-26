@@ -1,9 +1,10 @@
-import os
 import json
-import pytest
-import pandas as pd
-import src.services as services
+import os
 
+import pandas as pd
+import pytest
+
+import src.services as services
 
 FILE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "operations.xlsx"))
 

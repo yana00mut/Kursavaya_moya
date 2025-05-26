@@ -1,10 +1,11 @@
-import os
 import json
+import os
 import tempfile
-import pytest
-from unittest import mock
 from datetime import datetime
+from unittest import mock
+
 import pandas as pd
+import pytest
 
 import src.views as views
 
