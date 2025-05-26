@@ -13,7 +13,7 @@ import src.views as views
 @pytest.fixture
 def temp_settings_file():
     settings = {"user_currencies": ["EUR", "RUB"], "user_stocks": ["AAPL", "GOOG"]}
-    with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.json') as tmp:
+    with tempfile.NamedTemporaryFile(mode="w+", delete=False, suffix=".json") as tmp:
         json.dump(settings, tmp)
         tmp_path = tmp.name
     yield tmp_path
@@ -28,7 +28,7 @@ def temp_transactions_file():
         "Сумма": [1000, 2000, 500, 3000],
         "Кешбэк": [10, 20, 5, 30],
         "Категория": ["Еда", "Транспорт", "Еда", "Развлечения"],
-        "Описание": ["Кафе", "Такси", "Ресторан", "Кино"]
+        "Описание": ["Кафе", "Такси", "Ресторан", "Кино"],
     }
     df = pd.DataFrame(data)
     tmp_dir = tempfile.mkdtemp()
@@ -77,7 +77,9 @@ def test_retrieve_stock_data(mock_get):
 
 
 def test_analyze_transactions_success(temp_transactions_file):
-    result = views.analyze_transactions(temp_transactions_file, "2025-04-01", "2025-04-30")
+    result = views.analyze_transactions(
+        temp_transactions_file, "2025-04-01", "2025-04-30"
+    )
     assert "card_summary" in result
     assert "top_five_transactions" in result
     assert len(result["card_summary"]) > 0
@@ -92,18 +94,22 @@ def test_analyze_transactions_file_not_found():
 @mock.patch("views.get_exchange_rates")
 @mock.patch("views.retrieve_stock_data")
 @mock.patch("views.analyze_transactions")
-def test_main_dashboard_handler_success(mock_analyze, mock_stocks, mock_rates, mock_config):
+def test_main_dashboard_handler_success(
+    mock_analyze, mock_stocks, mock_rates, mock_config
+):
     mock_config.return_value = {"user_currencies": ["EUR"], "user_stocks": ["AAPL"]}
     mock_rates.return_value = [{"currency": "EUR", "rate": 0.9}]
     mock_stocks.return_value = [{"stock": "AAPL", "price": "N/A"}]
     mock_analyze.return_value = {
         "card_summary": [{"Номер карты": 1234, "Сумма": 1000, "Кешбэк": 10}],
-        "top_five_transactions": [{
-            "Operation Date": datetime.now(),
-            "Сумма": 1000,
-            "Категория": "Еда",
-            "Описание": "Кафе"
-        }]
+        "top_five_transactions": [
+            {
+                "Operation Date": datetime.now(),
+                "Сумма": 1000,
+                "Категория": "Еда",
+                "Описание": "Кафе",
+            }
+        ],
     }
     result = views.main_dashboard_handler("2025-04-09 14:30:00")
     data = json.loads(result)

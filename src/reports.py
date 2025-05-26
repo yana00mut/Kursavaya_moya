@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def save_to_json(file_name=None):
+    """Декоратор для сохранения результата функции в JSON-файл."""
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -54,6 +55,7 @@ def save_to_json(file_name=None):
 
 @save_to_json
 def expenses_by_category(file_path, category, start_date=None):
+    """Вычисляет расходы по категории за 90 дней от start_date."""
     logger.info(f"Вычисление трат для категории: {category}")
     try:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -61,24 +63,36 @@ def expenses_by_category(file_path, category, start_date=None):
         data = pd.read_excel(data_path)
 
         if "Дата операции" not in data.columns:
-            return json.dumps({"error": "Столбец с датами не найден"}, ensure_ascii=False, indent=4)
+            return json.dumps(
+                {"error": "Столбец с датами не найден"}, ensure_ascii=False, indent=4
+            )
 
-        data["date"] = pd.to_datetime(data["Дата операции"], format="%d.%m.%Y %H:%M:%S", dayfirst=True)
+        data["date"] = pd.to_datetime(
+            data["Дата операции"], format="%d.%m.%Y %H:%M:%S", dayfirst=True
+        )
 
         if start_date:
             try:
                 start_date_dt = pd.to_datetime(start_date, format="%Y-%m-%d")
             except ValueError:
                 logger.error("Ошибка: Неправильный формат даты")
-                return json.dumps({"error": "Дата должна быть в формате YYYY-MM-DD"}, ensure_ascii=False, indent=4)
+                return json.dumps(
+                    {"error": "Дата должна быть в формате YYYY-MM-DD"},
+                    ensure_ascii=False,
+                    indent=4,
+                )
         else:
             start_date_dt = pd.to_datetime(datetime.now())
 
         end_date = start_date_dt + timedelta(days=90)
 
-        filtered_data = data[(data["date"] >= start_date_dt) & (data["date"] <= end_date)]
+        filtered_data = data[
+            (data["date"] >= start_date_dt) & (data["date"] <= end_date)
+        ]
         if filtered_data.empty:
-            return json.dumps({"error": "Нет данных за этот период"}, ensure_ascii=False, indent=4)
+            return json.dumps(
+                {"error": "Нет данных за этот период"}, ensure_ascii=False, indent=4
+            )
 
         if category:
             filtered_data = filtered_data[filtered_data["Категория"] == category]
@@ -86,12 +100,20 @@ def expenses_by_category(file_path, category, start_date=None):
             result = {
                 "category": category,
                 "total_spent": round(total_spent, 2),
-                "period": f"{start_date_dt.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
+                "period": f"{start_date_dt.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}",
             }
         else:
             filtered_data["day_of_week"] = filtered_data["date"].dt.day_name()
             expenses = []
-            days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            days = [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+                "Sunday",
+            ]
             for day in days:
                 day_data = filtered_data[filtered_data["day_of_week"] == day]
                 total = day_data["Сумма платежа"].sum()
@@ -102,7 +124,9 @@ def expenses_by_category(file_path, category, start_date=None):
 
     except Exception as e:
         logger.error(f"Ошибка: Проблема с обработкой данных: {e}")
-        return json.dumps({"error": "Не удалось обработать данные"}, ensure_ascii=False, indent=4)
+        return json.dumps(
+            {"error": "Не удалось обработать данные"}, ensure_ascii=False, indent=4
+        )
 
 
 if __name__ == "__main__":

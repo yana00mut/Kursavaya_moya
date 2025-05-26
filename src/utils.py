@@ -10,7 +10,9 @@ from dotenv import load_dotenv
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 load_dotenv()
@@ -37,6 +39,7 @@ except Exception as e:
 
 
 def calculate_date_range(input_date):
+    """Вернуть начало месяца и дату в формате 'дд.мм.гггг' для заданной даты."""
     try:
         date_object = datetime.strptime(input_date, "%Y-%m-%d %H:%M:%S")
         month_start = date_object.replace(day=1)
@@ -49,6 +52,7 @@ def calculate_date_range(input_date):
 
 
 def filter_transactions_by_date(date_input):
+    """Отфильтровать операции из глобального списка по дате в пределах месяца."""
     result = []
     try:
         start_date_str, end_date_str = calculate_date_range(date_input)
@@ -71,6 +75,7 @@ def filter_transactions_by_date(date_input):
 
 
 def create_greeting_message():
+    """Вернуть приветствие в зависимости от текущего времени суток."""
     current_hour = datetime.now().hour
     if current_hour >= 5 and current_hour < 12:
         greeting = "Доброе утро"
@@ -84,6 +89,7 @@ def create_greeting_message():
 
 
 def get_operations_info(operations):
+    """Извлечь списки номеров карт, сумм и кешбэков из операций."""
     card_numbers = []
     amounts_list = []
     cashback_list = []
@@ -98,11 +104,12 @@ def get_operations_info(operations):
 
 
 def find_top_transactions(operations):
+    """Вернуть топ-5 операций с наибольшими суммами."""
     try:
         sorted_operations = sorted(
             operations,
             key=lambda x: x.get("Сумма операции с округлением", 0),
-            reverse=True
+            reverse=True,
         )
         top_transactions = sorted_operations[:5]
         return top_transactions
@@ -117,6 +124,7 @@ def find_top_transactions(operations):
 
 
 def fetch_currency_and_stocks(settings_path):
+    """Загрузить курсы валют и цены акций на основе пользовательских настроек."""
     currencies_list = []
     stocks_list = []
     try:
@@ -139,7 +147,9 @@ def fetch_currency_and_stocks(settings_path):
         resp_stocks = requests.get(stocks_url).json()
 
         for stock in resp_stocks.get("data", []):
-            stocks_list.append({"stock": stock["symbol"], "price": float(stock["close"])})
+            stocks_list.append(
+                {"stock": stock["symbol"], "price": float(stock["close"])}
+            )
 
         return currencies_list, stocks_list
 
@@ -156,6 +166,7 @@ def fetch_currency_and_stocks(settings_path):
 
 
 def sort_transactions_by_month(transactions, date=None):
+    """Отфильтровать DataFrame с транзакциями за последние 90 дней от даты."""
     try:
         if date is None:
             date = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
@@ -163,11 +174,14 @@ def sort_transactions_by_month(transactions, date=None):
         end_date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
         start_date = end_date - timedelta(days=90)
 
-        transactions["Дата платежа"] = pd.to_datetime(transactions["Дата платежа"], errors="coerce", dayfirst=True)
+        transactions["Дата платежа"] = pd.to_datetime(
+            transactions["Дата платежа"], errors="coerce", dayfirst=True
+        )
 
         filtered_data = transactions[
             (transactions["Дата платежа"] >= start_date)
-            & (transactions["Дата платежа"] <= end_date)]
+            & (transactions["Дата платежа"] <= end_date)
+        ]
         return filtered_data
 
     except (ValueError, KeyError, TypeError) as e:

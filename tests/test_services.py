@@ -6,7 +6,9 @@ import pytest
 
 import src.services as services
 
-FILE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "operations.xlsx"))
+FILE_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "data", "operations.xlsx")
+)
 
 
 def test_read_excel_file_success():

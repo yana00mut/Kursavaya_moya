@@ -81,7 +81,10 @@ def analyze_transactions(transactions_file, date_start, date_end):
     try:
         data = pd.read_excel(transactions_file)
         data["Operation Date"] = pd.to_datetime(data["Дата операции"])
-        filtered = data[(data["Operation Date"] >= date_start) & (data["Operation Date"] <= date_end)]
+        filtered = data[
+            (data["Operation Date"] >= date_start)
+            & (data["Operation Date"] <= date_end)
+        ]
         cards = filtered.groupby("Номер карты").agg({"Сумма": "sum", "Кешбэк": "sum"})
         cards = cards.reset_index()
         result["card_summary"] = cards.to_dict(orient="records")
@@ -120,7 +123,9 @@ def main_dashboard_handler(date_time_input):
         transactions_list = []
         for transaction in transactions["top_five_transactions"]:
             transaction_info = {}
-            transaction_info["date"] = transaction["Operation Date"].strftime("%d.%m.%Y")
+            transaction_info["date"] = transaction["Operation Date"].strftime(
+                "%d.%m.%Y"
+            )
             transaction_info["amount"] = transaction["Сумма"]
             transaction_info["category"] = transaction["Категория"]
             transaction_info["description"] = transaction["Описание"]
@@ -144,7 +149,7 @@ def main_dashboard_handler(date_time_input):
         error = {
             "status": "error",
             "message": f"Произошла ошибка: {str(e)}",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
         json_result = json.dumps(error, ensure_ascii=False, indent=2)

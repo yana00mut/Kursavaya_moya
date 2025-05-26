@@ -38,16 +38,16 @@ def home_page(date_input):
             "data": {
                 "api_data": api_data,
                 "processed_data": processed_data,
-                "operations": data.to_dict(orient="records")
+                "operations": data.to_dict(orient="records"),
             },
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
         return json.dumps(result, ensure_ascii=False, indent=2)
     except Exception:
         error_result = {
             "status": "error",
             "message": "Проблема с обработкой главной страницы",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
         return json.dumps(error_result, ensure_ascii=False, indent=2)
 
@@ -55,13 +55,19 @@ def home_page(date_input):
 def investment_bank(month_str, transactions, threshold):
     try:
         df = pd.DataFrame(transactions)
-        df['Дата операции'] = pd.to_datetime(df["Дата операции"], dayfirst=True)
+        df["Дата операции"] = pd.to_datetime(df["Дата операции"], dayfirst=True)
         month_dt = datetime.strptime(month_str, "%Y-%m")
         start = month_dt.replace(day=1)
-        end = (month_dt.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+        end = (month_dt.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(
+            days=1
+        )
         filtered = df[(df["Дата операции"] >= start) & (df["Дата операции"] <= end)]
         total = filtered["Сумма"].sum()
-        return {"month": month_str, "total_spent": round(total, 2), "above_threshold": total > threshold}
+        return {
+            "month": month_str,
+            "total_spent": round(total, 2),
+            "above_threshold": total > threshold,
+        }
     except Exception:
         print("Ошибка: Не удалось обработать инвестиционные данные")
         return {"error": "Проблема с данными"}
@@ -76,12 +82,13 @@ def spending_by_category(transactions_df, category):
         filtered = df[
             (df["Категория"] == category)
             & (df["Дата операции"] >= start_date)
-            & (df["Дата операции"] <= end_date)]
+            & (df["Дата операции"] <= end_date)
+        ]
         total = filtered["Сумма"].sum()
         return {
             "category": category,
             "total_spent": round(total, 2),
-            "period": f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
+            "period": f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}",
         }
     except Exception:
         print("Ошибка: Не удалось обработать траты по категории")
@@ -101,9 +108,9 @@ def run_dashboard(date_input):
                 "home_page": home_result,
                 "investment": investment_result,
                 "category_spending": category_result,
-                "operations": transactions
+                "operations": transactions,
             },
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
         print("Главная страница:", home_result)
         print("Инвестиции:", investment_result)
@@ -114,7 +121,7 @@ def run_dashboard(date_input):
         error_result = {
             "status": "error",
             "message": "Проблема с обработкой данных",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
         return json.dumps(error_result, ensure_ascii=False, indent=2)
 

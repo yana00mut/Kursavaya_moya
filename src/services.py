@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def read_excel_file(file_path):
+    """Загрузить Excel-файл и вернуть DataFrame или None при ошибке."""
     logger.info("Пытаемся загрузить файл: " + file_path)
     try:
         data = pd.read_excel(file_path)
@@ -31,13 +32,16 @@ def read_excel_file(file_path):
 
 
 def search_in_data(search_text, file_path):
+    """Искать строки с текстом в Excel-файле, вернуть результаты в JSON."""
     logger.info("Поиск: " + search_text)
     try:
         search_text = search_text.strip().lower()
         data = read_excel_file(file_path)
         if data is None:
             logger.error("Файл не загружен, поиск невозможен")
-            return json.dumps({"error": "Не удалось выполнить поиск"}, ensure_ascii=False)
+            return json.dumps(
+                {"error": "Не удалось выполнить поиск"}, ensure_ascii=False
+            )
 
         matched_rows = []
         for index, row in data.iterrows():
@@ -52,12 +56,14 @@ def search_in_data(search_text, file_path):
         response = {
             "query": search_text,
             "results_count": len(matched_rows),
-            "results": matched_rows
+            "results": matched_rows,
         }
         return json.dumps(response, ensure_ascii=False)
     except Exception as e:
         logger.error(f"Ошибка при поиске: {str(e)}")
-        return json.dumps({"error": f"Не удалось выполнить поиск: {str(e)}"}, ensure_ascii=False)
+        return json.dumps(
+            {"error": f"Не удалось выполнить поиск: {str(e)}"}, ensure_ascii=False
+        )
 
 
 if __name__ == "__main__":
