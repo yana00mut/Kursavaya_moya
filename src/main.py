@@ -1,132 +1,33 @@
-import json
-from datetime import datetime, timedelta
-
+from src.views import main_dashboard_handler
+from src.reports import expenses_by_category
+from src.services import search_in_data
+from src.utils import filter_transactions_by_date, find_top_transactions, fetch_currency_and_stocks
 import pandas as pd
+import os
+
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+operations_path = os.path.join(base_dir, "data", "operations.xlsx")
 
 
-def parse_datetime(date_str):
-    try:
-        return datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-    except ValueError:
-        raise ValueError("Неправильный формат даты")
-
-
-def fetch_data_from_api(dt):
-    return {"api_data": f"Данные за {dt.strftime('%Y-%m-%d')}"}
-
-
-def analyze_data(api_data):
-    return {"processed": api_data}
-
-
-def read_transactions(file_path):
-    try:
-        return pd.read_excel(file_path)
-    except Exception:
-        print("Ошибка: Не удалось прочитать файл")
-        return pd.DataFrame()
-
-
-def home_page(date_input):
-    try:
-        dt = parse_datetime(date_input)
-        api_data = fetch_data_from_api(dt)
-        processed_data = analyze_data(api_data)
-        data = read_transactions("data/operations.xlsx")
-        result = {
-            "status": "success",
-            "data": {
-                "api_data": api_data,
-                "processed_data": processed_data,
-                "operations": data.to_dict(orient="records"),
-            },
-            "timestamp": datetime.now().isoformat(),
-        }
-        return json.dumps(result, ensure_ascii=False, indent=2)
-    except Exception:
-        error_result = {
-            "status": "error",
-            "message": "Проблема с обработкой главной страницы",
-            "timestamp": datetime.now().isoformat(),
-        }
-        return json.dumps(error_result, ensure_ascii=False, indent=2)
-
-
-def investment_bank(month_str, transactions, threshold):
-    try:
-        df = pd.DataFrame(transactions)
-        df["Дата операции"] = pd.to_datetime(df["Дата операции"], dayfirst=True)
-        month_dt = datetime.strptime(month_str, "%Y-%m")
-        start = month_dt.replace(day=1)
-        end = (month_dt.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(
-            days=1
-        )
-        filtered = df[(df["Дата операции"] >= start) & (df["Дата операции"] <= end)]
-        total = filtered["Сумма"].sum()
-        return {
-            "month": month_str,
-            "total_spent": round(total, 2),
-            "above_threshold": total > threshold,
-        }
-    except Exception:
-        print("Ошибка: Не удалось обработать инвестиционные данные")
-        return {"error": "Проблема с данными"}
-
-
-def spending_by_category(transactions_df, category):
-    try:
-        df = transactions_df.copy()
-        df["Дата операции"] = pd.to_datetime(df["Дата операции"], dayfirst=True)
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=90)
-        filtered = df[
-            (df["Категория"] == category)
-            & (df["Дата операции"] >= start_date)
-            & (df["Дата операции"] <= end_date)
-        ]
-        total = filtered["Сумма"].sum()
-        return {
-            "category": category,
-            "total_spent": round(total, 2),
-            "period": f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}",
-        }
-    except Exception:
-        print("Ошибка: Не удалось обработать траты по категории")
-        return {"error": "Проблема с данными"}
-
-
-def run_dashboard(date_input):
-    try:
-        data = read_transactions("data/operations.xlsx")
-        transactions = data.to_dict(orient="records")
-        home_result = json.loads(home_page(date_input))
-        investment_result = investment_bank(date_input[:7], transactions, 50)
-        category_result = spending_by_category(data, "Супермаркеты")
-        result = {
-            "status": "success",
-            "data": {
-                "home_page": home_result,
-                "investment": investment_result,
-                "category_spending": category_result,
-                "operations": transactions,
-            },
-            "timestamp": datetime.now().isoformat(),
-        }
-        print("Главная страница:", home_result)
-        print("Инвестиции:", investment_result)
-        print("Траты по категории:", category_result)
-        return json.dumps(result, ensure_ascii=False, indent=2)
-    except Exception:
-        print("Ошибка: Не удалось выполнить")
-        error_result = {
-            "status": "error",
-            "message": "Проблема с обработкой данных",
-            "timestamp": datetime.now().isoformat(),
-        }
-        return json.dumps(error_result, ensure_ascii=False, indent=2)
+def main():
+    df = pd.read_excel(operations_path)
+    date_time_input = "2025-05-26 17:23:00"
+    print("Home Dashboard:", main_dashboard_handler(date_time_input))
+    start_date = "2025-02-26"
+    category_result = expenses_by_category(operations_path, "Супермаркеты", start_date)
+    print("Expenses by Category (Supermarkets):", category_result)
+    search_query = "Колхоз"
+    search_result = search_in_data(search_query, operations_path)
+    print("Search Results for '{}':".format(search_query), search_result)
+    filtered_transactions = filter_transactions_by_date(date_time_input)
+    print("Filtered Transactions (by month):", len(filtered_transactions))
+    top_transactions = find_top_transactions(filtered_transactions)
+    print("Top 5 Transactions:", top_transactions)
+    settings_path = os.path.join(base_dir, "user_settings.json")
+    currencies, stocks = fetch_currency_and_stocks(settings_path)
+    print("Exchange Rates:", currencies)
+    print("Stock Prices:", stocks)
 
 
 if __name__ == "__main__":
-    test_date = "2025-04-09 14:30:00"
-    result = run_dashboard(test_date)
-    print(result)
+    main()
