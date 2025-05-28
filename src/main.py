@@ -8,12 +8,11 @@ import os
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 operations_path = os.path.join(base_dir, "data", "operations.xlsx")
 
-
 def main():
     df = pd.read_excel(operations_path)
-    date_time_input = "2025-05-26 17:23:00"
+    date_time_input = "2021-12-31 14:30:00"
     print("Home Dashboard:", main_dashboard_handler(date_time_input))
-    start_date = "2025-02-26"
+    start_date = "2021-10-01"
     category_result = expenses_by_category(operations_path, "Супермаркеты", start_date)
     print("Expenses by Category (Supermarkets):", category_result)
     search_query = "Колхоз"
@@ -27,7 +26,6 @@ def main():
     currencies, stocks = fetch_currency_and_stocks(settings_path)
     print("Exchange Rates:", currencies)
     print("Stock Prices:", stocks)
-
 
 if __name__ == "__main__":
     main()
