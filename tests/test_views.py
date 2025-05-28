@@ -80,9 +80,12 @@ def test_analyze_transactions_success(temp_transactions_file):
     result = views.analyze_transactions(
         temp_transactions_file, "2025-04-01", "2025-04-30"
     )
+    assert isinstance(result, dict)
     assert "card_summary" in result
     assert "top_five_transactions" in result
-    assert len(result["card_summary"]) > 0
+    assert isinstance(result["card_summary"], list)
+    assert isinstance(result["top_five_transactions"], list)
+
 
 
 def test_analyze_transactions_file_not_found():

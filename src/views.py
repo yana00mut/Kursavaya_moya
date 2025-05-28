@@ -9,7 +9,6 @@ import requests
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 def generate_time_based_greeting():
     hour = datetime.now().hour
     if hour >= 5 and hour < 12:
@@ -21,7 +20,6 @@ def generate_time_based_greeting():
     else:
         message = "Доброй ночи"
     return message
-
 
 def retrieve_user_config(file_path):
     settings = {}
@@ -37,7 +35,6 @@ def retrieve_user_config(file_path):
     except Exception as e:
         logger.error(f"Ошибка при загрузке файла настроек: {str(e)}")
         return settings
-
 
 def get_exchange_rates(currency_list):
     rates = []
@@ -55,9 +52,8 @@ def get_exchange_rates(currency_list):
         logger.error(f"Ошибка при загрузке курсов валют: {str(e)}")
         return rates
 
-
 def retrieve_stock_data(stock_list, zuvor=None):
-    stocks = zuvor
+    stocks = zuvor if zuvor is not None else []
     try:
         for stock in stock_list:
             url = "https://finance.yahoo.com/quote/" + stock
@@ -70,7 +66,6 @@ def retrieve_stock_data(stock_list, zuvor=None):
     except Exception as e:
         logger.error(f"Ошибка при загрузке цен акций: {str(e)}")
         return stocks
-
 
 def analyze_transactions(transactions_file, date_start, date_end):
     result = {"card_summary": [], "top_five_transactions": []}
@@ -85,17 +80,16 @@ def analyze_transactions(transactions_file, date_start, date_end):
             (data["Operation Date"] >= date_start)
             & (data["Operation Date"] <= date_end)
         ]
-        cards = filtered.groupby("Номер карты").agg({"Сумма": "sum", "Кешбэк": "sum"})
+        cards = filtered.groupby("Номер карты").agg({"Сумма платежа": "sum", "Кэшбэк": "sum"})
         cards = cards.reset_index()
         result["card_summary"] = cards.to_dict(orient="records")
-        top = filtered.nlargest(5, "Сумма")
+        top = filtered.nlargest(5, "Сумма платежа")
         result["top_five_transactions"] = top.to_dict(orient="records")
         return result
 
     except Exception as e:
         logger.error(f"Ошибка при обработке операций: {str(e)}")
         return result
-
 
 def main_dashboard_handler(date_time_input):
     try:
@@ -116,8 +110,8 @@ def main_dashboard_handler(date_time_input):
         for card in transactions["card_summary"]:
             card_info = {}
             card_info["card_ending"] = str(card["Номер карты"])[-4:]
-            card_info["total_expense"] = card["Сумма"]
-            card_info["cashback_earned"] = card["Кешбэк"]
+            card_info["total_expense"] = card["Сумма платежа"]
+            card_info["cashback_earned"] = card["Кэшбэк"]
             cards_list.append(card_info)
 
         transactions_list = []
@@ -126,7 +120,7 @@ def main_dashboard_handler(date_time_input):
             transaction_info["date"] = transaction["Operation Date"].strftime(
                 "%d.%m.%Y"
             )
-            transaction_info["amount"] = transaction["Сумма"]
+            transaction_info["amount"] = transaction["Сумма платежа"]
             transaction_info["category"] = transaction["Категория"]
             transaction_info["description"] = transaction["Описание"]
             transactions_list.append(transaction_info)
@@ -155,8 +149,7 @@ def main_dashboard_handler(date_time_input):
         json_result = json.dumps(error, ensure_ascii=False, indent=2)
         return json_result
 
-
 if __name__ == "__main__":
-    test_date = "2025-04-09 14:30:00"
+    test_date = "2021-12-31 14:30:00"
     result = main_dashboard_handler(test_date)
     print(result)
